@@ -1,0 +1,71 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+from datetime import datetime
+from openpyxl import Workbook
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Initialize Excel workbook and worksheet
+workbook = Workbook()
+worksheet = workbook.active
+headers = ["Serial No", "Timestamp", "Battery Level", "Red Screen Detected", "Black Screen Detected", "Pass/Fail", "Logs"]
+worksheet.append(headers)
+
+# ADB command to retrieve battery information
+adb_command = ['adb', '-s', receiver_device_serial, 'shell', 'dumpsys', 'battery']
+# Compose the message
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+time.sleep(2)
+sender_device(resourceId="com.google.android.apps.messaging:id/action_video_call").click()
+time.sleep(2)
+sender_device(resourceId="com.google.android.apps.tachyon:id/precall_overflow_icon").click()
+time.sleep(2)
+sender_device.xpath('//android.widget.ListView/android.widget.LinearLayout[2]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]').click()
+time.sleep(2)
+sender_device(resourceId="com.google.android.contacts:id/verb_video").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/action0", text="DECLINE").click()
+
+# Function to check for red screen
+def is_red_screen():
+    # ... (your code here)
+    return red_ratio > 0.01
+
+# Function to check for black screen
+def is_black_screen():
+    # ... (your code here)
+    return black_ratio > 0.95
+
+# Initialize the serial number counter
+serial_no = 1
+
+# Check for red screen and black screen
+red_detected = is_red_screen()
+black_detected = is_black_screen()
+
+# Determine the pass/fail status based on conditions
+if red_detected or black_detected:
+    pass_fail = "Fail"
+else:
+    pass_fail = "Pass"
+
+# Get current timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Log data to the Excel worksheet
+logs = "Red Screen Detected: {}, Black Screen Detected: {}".format(red_detected, black_detected)
+worksheet.append([serial_no, timestamp, battery_level, red_detected, black_detected, pass_fail, logs])
+
+# Save the Excel workbook
+workbook.save("output.xlsx")
