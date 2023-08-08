@@ -1,0 +1,46 @@
+import uiautomator2 as ui2
+import time
+from openpyxl import Workbook
+from datetime import datetime
+
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Initialize result recording list
+results = []
+
+# Function to add result to the list
+def add_result(serial_number, description, result):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    results.append((serial_number, description, result, timestamp))
+
+# Your existing code
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Shubham").click()
+time.sleep(2)
+# ... Your existing code
+
+# Check if typing language changed
+if receiver_device(resourceId="com.google.android.apps.messaging:id/compose_message_text", text="क").exists():
+    print("Typing language changed")
+    add_result(1, "Typing Language Change Test", "Pass")
+else:
+    print("Typing language not changed")
+    add_result(1, "Typing Language Change Test", "Fail")
+
+# Save results to an Excel file
+def save_results_to_excel(results):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["Serial No", "Description", "Result", "Timestamp"])
+    
+    for serial, desc, result, timestamp in results:
+        ws.append([serial, desc, result, timestamp])
+    
+    wb.save("test_results.xlsx")
+
+# Save the results to an Excel file
+save_results_to_excel(results)
