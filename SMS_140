@@ -1,0 +1,38 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from datetime import datetime, timedelta
+
+# ... (other imports and setup code)
+
+# Define a function to log results
+def log_result(serial, description, status):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"Serial: {serial} | Description: {description} | Status: {status} | Timestamp: {timestamp}")
+
+# ... (other setup code)
+
+# ... (existing code for composing a message)
+
+try:
+    # Click on the overflow menu
+    sender_device(resourceId="com.google.android.apps.messaging:id/action_bar_overflow").click()
+    time.sleep(2)
+
+    # Click on the 'Settings' option in the overflow menu
+    sender_device.xpath('//android.widget.ListView/android.widget.LinearLayout[1]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]').click()
+    time.sleep(2)
+
+    # Click on 'Block and report spam'
+    sender_device(resourceId="com.google.android.apps.messaging:id/title", text="Block and report spam").click()
+    time.sleep(2)
+
+    # Click 'OK' to confirm
+    sender_device(text="OK").click()
+
+    # Log the results
+    log_result(sender_device.serial, "Blocked and reported spam", "Pass")
+except Exception as e:
+    log_result(sender_device.serial, f"Exception - {str(e)}", "Fail")
+
+# ... (other cleanup code)
