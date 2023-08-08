@@ -1,0 +1,79 @@
+# Import necessary modules
+import uiautomator2 as ui2
+import time
+import subprocess
+
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a Device object for the sender device
+sender_device_serial = "cf611ff9"
+sender_device = ui2.Device(sender_device_serial)
+time.sleep(2)
+# Convert coordinates to pixels
+width, height = receiver_device.info["displayWidth"], receiver_device.info["displayHeight"]
+x = int(0.33 * width)
+y = int(0.551 * height)
+
+# Long-press action
+receiver_device.long_click(x, y)
+time.sleep(2)
+receiver_device(text="Widgets").click()
+time.sleep(2)
+# Convert coordinates to pixels
+width, height = receiver_device.info["displayWidth"], receiver_device.info["displayHeight"]
+x = int(0.5 * width)
+y_start = int(0.8 * height)  # Starting point of the scroll
+y_end = int(0.2 * height)  # Ending point of the scroll
+
+# Scroll to Contacts using swipe gestures
+for _ in range(1):
+    receiver_device.swipe(x, y_start, x, y_end, steps=10)
+    time.sleep(1)  # Add a delay to allow the scroll to complete
+
+# Click on Contacts
+receiver_device(text="Contacts").click()
+time.sleep(1)  # Add a delay to allow the action to complete
+
+# Convert coordinates to pixels
+width, height = receiver_device.info["displayWidth"], receiver_device.info["displayHeight"]
+x = int(0.5 * width)
+y_start = int(0.8 * height)  # Starting point of the scroll
+y_end = int(0.2 * height)  # Ending point of the scroll
+
+# Scroll to Contacts using swipe gestures
+for _ in range(2):
+    receiver_device.swipe(x, y_start, x, y_end, steps=10)
+    time.sleep(1)  # Add a delay to allow the scroll to complete
+# Find the Direct messages icon
+direct_messages_icon = receiver_device(text="Direct message")
+
+# Get the position and size of the Direct messages icon
+info = direct_messages_icon.info
+bounds = info["bounds"]
+
+# Calculate the coordinates for dragging
+start_x = (bounds["left"] + bounds["right"]) // 2
+start_y = (bounds["top"] + bounds["bottom"]) // 2
+end_x = int(receiver_device.info["displayWidth"] * 0.5)  # Destination X coordinate on the home screen
+end_y = int(receiver_device.info["displayHeight"] * 0.8)  # Destination Y coordinate on the home screen
+
+# Drag the Direct messages icon to the home screen
+receiver_device.drag(start_x, start_y, end_x, end_y, duration=1)  # Adjust the duration as needed
+time.sleep(2)  # Add a delay to allow the drag action to complete
+receiver_device(resourceId="com.google.android.contacts:id/cliv_data_view", text="+91 84486 97488").click()
+time.sleep(2)
+receiver_device(text="AAAAA (Mess…").click()
+time.sleep(2)
+num_runs = 10
+for run in range(num_runs):
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+# Add a delay to allow the scrolling to complete
+time.sleep(1)
+# Add a delay to allow the action to complete
+time.sleep(1)
