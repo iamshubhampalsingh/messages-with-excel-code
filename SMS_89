@@ -1,0 +1,67 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+from datetime import datetime, timedelta
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from openpyxl import Workbook
+
+# Create a new Excel workbook and add a worksheet
+workbook = Workbook()
+worksheet = workbook.active
+worksheet.title = "Test Results"
+
+# Add column headers
+worksheet["A1"] = "Serial No"
+worksheet["B1"] = "Description of Test Case"
+worksheet["C1"] = "Pass/Fail"
+worksheet["D1"] = "Timestamp"
+
+# Initialize serial number
+serial_number = 1
+
+# ADB commands to turn on the receiver and sender devices' screens
+receiver_turn_on_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '224']
+sender_turn_on_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '224']
+
+# ADB commands to turn off the receiver and sender devices' screens
+receiver_turn_off_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '26']
+sender_turn_off_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '26']
+
+# Compose the message
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/action_call").click()
+
+# Check for red screen and black screen
+red_detected = is_red_screen()
+black_detected = is_black_screen()
+
+# Determine the pass/fail status based on conditions
+if red_detected or black_detected:
+    pass_fail = "Fail"
+else:
+    pass_fail = "Pass"
+
+# Get current timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Log data to the console
+print("Serial No:", serial_number)
+print("Timestamp:", timestamp)
+print("Red Screen Detected:", red_detected)
+print("Black Screen Detected:", black_detected)
+print("Pass/Fail:", pass_fail)
+
+# Add the test result to the Excel worksheet
+worksheet.append([serial_number, "Video Call Test", pass_fail, timestamp])
+
+# Save the workbook
+workbook.save("test_results.xlsx")
