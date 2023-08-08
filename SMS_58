@@ -1,0 +1,76 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import pandas as pd
+
+def main():
+    # Connect to the device
+    receiver_device_serial = "192.168.168.16:5555"
+    receiver_device = ui2.Device(receiver_device_serial)
+
+    time.sleep(2)  # Wait for 2 seconds
+
+    # Click on the "Messages" element
+    receiver_device(text="Messages").click()
+    time.sleep(2)  # Wait for 2 seconds
+
+    # Click on the "Start chat" element
+    receiver_device(text="Start chat").click()
+    time.sleep(2)  # Wait for 2 seconds
+
+    # Click on the "Shubham" element
+    receiver_device.xpath('//android.widget.ScrollView').set_text("Shubham")
+    time.sleep(2)
+
+    receiver_device(text="Shubham").click()
+
+    time.sleep(2)
+    # Capture a screenshot
+    screenshot = receiver_device.screenshot()
+
+    # Get the color of a specific pixel on the screen
+    pixel_color = screenshot.getpixel((100, 100))  # Change the coordinates as needed
+
+    screen_color_result = ""
+    if pixel_color == (0, 0, 0):
+        screen_color_result = "Screen is black"
+    elif pixel_color == (255, 0, 0):  # Assuming red color is (255, 0, 0)
+        screen_color_result = "Screen is red"
+    else:
+        screen_color_result = "Screen is neither black nor red"
+
+    message_sent_result = ""
+    if receiver_device(resourceId="com.google.android.apps.messaging:id/message_lock_icon").exists():
+        message_sent_result = "MESSAGE SENT WITHOUT ANY LAG"
+    else:
+        message_sent_result = "MESSAGE SENT WITH ANY LAG"
+
+    # Create a DataFrame to store the test results
+    test_case = "screen_color_and_message_sent_test"
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+    test_results_df = pd.DataFrame({
+        'Serial No': [receiver_device_serial],
+        'Test Case No': [test_case],
+        'Screen Color Result': [screen_color_result],
+        'Message Sent Result': [message_sent_result],
+        'Timestamp': [timestamp]
+    })
+
+    # Save the DataFrame to an Excel file
+    excel_filename = 'test_results.xlsx'
+    try:
+        existing_data = pd.read_excel(excel_filename)
+        updated_data = pd.concat([existing_data, test_results_df], ignore_index=True)
+        updated_data.to_excel(excel_filename, index=False)
+        print("Test result appended to", excel_filename)
+    except FileNotFoundError:
+        test_results_df.to_excel(excel_filename, index=False)
+        print("Test result saved to", excel_filename)
+
+    # Print the test results
+    print(screen_color_result)
+    print(message_sent_result)
+
+if __name__ == "__main__":
+    main()
