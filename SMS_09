@@ -1,0 +1,36 @@
+import uiautomator2 as ui2
+import time
+
+# Connect to the device
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Test case information
+test_case = "scroll_and_text_check_test"
+timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+# Define swipe parameters
+start_x = 500
+start_y = 500
+end_y = 1500
+swipe_duration = 0.5
+num_swipes = 1
+
+# Perform multiple swipes to scroll the screen downwards
+for _ in range(num_swipes):
+    receiver_device.swipe(start_x, start_y, start_x, end_y, duration=swipe_duration)
+    time.sleep(1)
+
+# Check if both 'Messages' and 'now' texts exist on the screen
+if receiver_device(text="Messages").exists and receiver_device(text="now").exists:
+    result = "Both 'Messages' and 'now' texts exist on the screen"
+else:
+    result = "Either 'Messages' or 'now' text is missing"
+
+# Log the test result
+test_results = [{'Serial No': receiver_device_serial, 'Test Case No': test_case, 'Result': result, 'Timestamp': timestamp}]
+
+# Print the test results
+print("Test Results:")
+for test_result in test_results:
+    print(f"Serial No: {test_result['Serial No']}, Test Case No: {test_result['Test Case No']}, Result: {test_result['Result']}")
