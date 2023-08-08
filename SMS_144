@@ -1,0 +1,52 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from datetime import datetime
+import openpyxl
+
+
+# Define a function to log results and save to Excel
+def log_result(description, status):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    result_row = [description, status, timestamp]
+    results_sheet.append(result_row)
+    print(f"Description: {description} | Status: {status} | Timestamp: {timestamp}")
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/start_chat_fab").click()
+
+# Wait for the Messaging app to open
+time.sleep(2)
+
+# Enter the recipient's number
+receiver_device.xpath('//android.widget.ScrollView').set_text("9868431105")
+time.sleep(2)
+receiver_device.xpath('//android.widget.ListView/android.view.ViewGroup[2]').click()
+time.sleep(2)
+print("The contacts entered")
+
+
+# Create an Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+results_sheet = workbook.active
+results_sheet.title = "Results"
+results_sheet.append(["Description", "Status", "Timestamp"])
+
+
+
+# Perform multiple swipes to scroll the screen downwards
+num_swipes = 5
+for _ in range(num_swipes):
+    receiver_device.swipe(start_x, start_y, start_x, end_y, duration=swipe_duration)
+    time.sleep(1)
+
+
+
+
+
+
+
+# Save the results to an Excel file
+excel_filename = "results.xlsx"
+workbook.save(excel_filename)
+print(f"Results saved to {excel_filename}")
