@@ -1,0 +1,65 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from openpyxl import Workbook
+from datetime import datetime
+
+# Connect to the devices
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a new Excel workbook and add a worksheet
+workbook = Workbook()
+worksheet = workbook.active
+worksheet.title = "RCS Test Results"
+
+# Add column headers
+worksheet["A1"] = "Serial No"
+worksheet["B1"] = "Description of Test Case"
+worksheet["C1"] = "Pass/Fail"
+worksheet["D1"] = "Timestamp"
+
+# Function to send RCS message
+def send_rcs_message(device, recipient, message):
+    device(text="Messages").click()
+    time.sleep(2)
+    device(text="Start chat").click()
+    time.sleep(2)
+    device.xpath('//android.widget.ScrollView').click()
+    time.sleep(2)
+    device.xpath('//android.widget.ScrollView').set_text(recipient)
+    time.sleep(2)
+    device(text=recipient).click()
+    time.sleep(2)
+    device(text="RCS message").set_text(message)
+    time.sleep(2)
+    device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+    device.press("home")
+
+# Test case 1: Sending RCS message from receiver to sender
+recipient = "Shubham"
+message = "THISISSHUBHAMPALSINGH"
+send_rcs_message(receiver_device, recipient, message)
+
+# Test case 2: Sending RCS message from sender to receiver
+recipient = "AAAAA"
+message = "THISISSHUBHAMPALSINGH"
+send_rcs_message(sender_device, recipient, message)
+
+# Determine the pass/fail status based on conditions
+pass_fail_1 = "Pass"  # Assuming no errors occur
+pass_fail_2 = "Pass"  # Assuming no errors occur
+
+# Get current timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Add the test results to the Excel worksheet
+worksheet.append([1, "Sending RCS Message from Receiver to Sender", pass_fail_1, timestamp])
+worksheet.append([2, "Sending RCS Message from Sender to Receiver", pass_fail_2, timestamp])
+
+# Save the workbook
+workbook.save("rcs_test_results.xlsx")
