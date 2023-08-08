@@ -1,0 +1,94 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+import cv2
+import numpy as np
+import openpyxl
+
+# Compose the message
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+time.sleep(2)
+sender_device(resourceId="com.google.android.apps.messaging:id/action_video_call").click()
+time.sleep(2)
+sender_device(resourceId="com.google.android.apps.tachyon:id/precall_overflow_icon").click()
+time.sleep(2)
+sender_device.xpath('//android.widget.ListView/android.widget.LinearLayout[2]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]').click()
+time.sleep(2)
+sender_device(resourceId="com.google.android.contacts:id/verb_video").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/action0", text="VIDEO").click()
+time.sleep(60)
+# Function to capture a screenshot
+def capture_screenshot():
+    screenshot = receiver_device.screenshot(format="opencv")
+    return screenshot
+
+# Function to check for a red screen
+def is_red_screen():
+    screenshot = capture_screenshot()
+    hsv = cv2.cvtColor(screenshot, cv2.COLOR_BGR2HSV)
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])
+    mask1 = cv2.inRange(hsv, lower_red, upper_red)
+    lower_red = np.array([160, 100, 100])
+    upper_red = np.array([179, 255, 255])
+    mask2 = cv2.inRange(hsv, lower_red, upper_red)
+    red_mask = mask1 + mask2
+    red_pixels = cv2.countNonZero(red_mask)
+    total_pixels = screenshot.shape[0] * screenshot.shape[1]
+    red_ratio = red_pixels / total_pixels
+    return red_ratio > 0.01  # Adjust the threshold as needed
+
+# Function to check for a black screen
+def is_black_screen():
+    screenshot = capture_screenshot()
+    gray = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
+    black_pixels = cv2.countNonZero(gray == 0)
+    total_pixels = screenshot.shape[0] * screenshot.shape[1]
+    black_ratio = black_pixels / total_pixels
+    return black_ratio > 0.95  # Adjust the threshold as needed
+
+# Function to check for lag
+def has_lag():
+    start_time = time.time()
+    # Perform actions on the device
+    # ...
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    return elapsed_time > 5.0  # Adjust the threshold as needed
+
+# Create a new Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+sheet = workbook.active
+
+# Write headers to the Excel sheet
+sheet.append(["Timestamp", "Issue Detected"])
+
+# Function to add a row to the Excel sheet
+def add_row(issue_detected):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append([timestamp, issue_detected])
+
+# Check for red screen, black screen, and lag
+if is_red_screen():
+    print("Red screen detected on the receiver device!")
+    add_row("Red Screen")
+elif is_black_screen():
+    print("Black screen detected on the receiver device!")
+    add_row("Black Screen")
+elif has_lag():
+    print("Lag detected on the receiver device!")
+    add_row("Lag")
+else:
+    print("No issues detected.")
+
+# Save the Excel workbook
+excel_file_path = "issue_log.xlsx"
+workbook.save(excel_file_path)
+print(f"Issues logged in {excel_file_path}")
