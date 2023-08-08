@@ -1,0 +1,75 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import pandas as pd
+
+def main():
+    # Connect to the device
+    receiver_device_serial = "192.168.168.57:5555"
+    receiver_device = ui2.Device(receiver_device_serial)
+    
+    # Pause for 2 seconds
+    time.sleep(2)
+    
+    # Define the initial swipe coordinates
+    start_x = 500
+    start_y = 500
+    end_y = 1500
+    swipe_duration = 0.5
+
+    # Perform multiple swipes to scroll the screen downwards
+    num_swipes = 5  # Adjust the number of swipes as needed
+    for _ in range(num_swipes):
+        receiver_device.swipe(start_x, start_y, start_x, end_y, duration=swipe_duration)
+        time.sleep(1)  # Adjust the delay between swipes if necessary
+
+    # Click on settings button
+    receiver_device(resourceId="com.android.systemui:id/settings_button_container").click()
+    time.sleep(2)
+    
+    # Scroll and click on "Sound and vibration"
+    receiver_device(scrollable=True).scroll.to(text="Sound and vibration")
+    time.sleep(2)
+    receiver_device(text="Sound and vibration").click()
+    time.sleep(2)
+    
+    # Scroll and click on "Proxima"
+    receiver_device(scrollable=True).scroll.to(text="Proxima")
+    time.sleep(2)
+    receiver_device(text="Proxima").click()
+    time.sleep(2)
+    
+    # Click on "OK" button
+    receiver_device(resourceId="android:id/button1").click()
+    time.sleep(2)
+    
+    # Press the home button
+    receiver_device.press("home")
+
+    # Create a DataFrame to store the test result
+    test_case = "settings_change_test"
+    result = "Settings changes were successfully made"
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    test_results_df = pd.DataFrame({
+        'Serial No': [receiver_device_serial],
+        'Test Case No': [test_case],
+        'Result': [result],
+        'Timestamp': [timestamp]
+    })
+    
+    # Save the DataFrame to an Excel file
+    excel_filename = 'test_results.xlsx'
+    try:
+        existing_data = pd.read_excel(excel_filename)
+        updated_data = pd.concat([existing_data, test_results_df], ignore_index=True)
+        updated_data.to_excel(excel_filename, index=False)
+        print("Test result appended to", excel_filename)
+    except FileNotFoundError:
+        test_results_df.to_excel(excel_filename, index=False)
+        print("Test result saved to", excel_filename)
+
+    # Print the test result
+    print(result)
+
+if __name__ == "__main__":
+    main()
