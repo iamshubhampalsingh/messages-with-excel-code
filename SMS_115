@@ -1,0 +1,77 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+import pandas as pd
+from datetime import datetime
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# ADB command to retrieve battery information
+adb_command = ['adb', '-s', receiver_device_serial, 'shell', 'dumpsys', 'battery']
+
+# Execute the ADB command and capture the output
+result = subprocess.run(adb_command, capture_output=True, text=True)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a DataFrame to store the results
+results_df = pd.DataFrame(columns=['Serial No', 'Description', 'Result', 'Timestamp'])
+
+# Add battery information to the DataFrame
+battery_info = result.stdout.splitlines()
+battery_percentage = None
+for line in battery_info:
+    if 'level' in line:
+        battery_percentage = line.split(':')[1].strip()
+if battery_percentage is not None:
+    results_df.loc[len(results_df)] = ['Receiver', 'Battery Percentage', battery_percentage, datetime.now()]
+
+# Compose and send messages multiple times
+num_message_sends = 10
+for send_num in range(num_message_sends):
+    sender_device(text="Messages").click()
+    time.sleep(2)
+    sender_device(text="Start chat").click()
+    time.sleep(2)
+    sender_device(text="AAAAA").click()
+    sender_device(text="Mobile+91 84486 97488").click()
+    
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+    
+    if receiver_device(resourceId="android:id/action0", text="MARK AS READ").exists():
+        result = 'Pass'
+        print("The pop up is available")
+    else:
+        result = 'Fail'
+        print("Pop up is not available")
+    
+    results_df.loc[len(results_df)] = ['Sender', f'Message Send {send_num + 1}', result, datetime.now()]
+
+# Check for message report
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(xpath='//*[@resource-id="android:id/list"]/android.view.ViewGroup[1]').click()
+time.sleep(2)
+
+if receiver_device(resourceId="com.google.android.apps.messaging:id/message_lock_icon").exists():
+    result = 'Pass'
+    print("Message report is sent")
+else:
+    result = 'Fail'
+    print("Message report is not sent")
+
+results_df.loc[len(results_df)] = ['Receiver', 'Message Report', result, datetime.now()]
+
+# Save the results DataFrame to an Excel file
+excel_filename = 'interaction_results.xlsx'
+results_df.to_excel(excel_filename, index=False)
+print("Results saved to", excel_filename)
