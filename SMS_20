@@ -1,0 +1,103 @@
+import uiautomator2 as ui2
+import time
+import pandas as pd
+
+def main():
+    # Connect to the device
+    receiver_device_serial = "192.168.168.16:5555"
+    receiver_device = ui2.Device(receiver_device_serial)
+    
+    # Pause for 2 seconds
+    time.sleep(2)
+    
+    # Open Messages and Start Chat
+    receiver_device(text="Messages").click()
+    time.sleep(2)
+    receiver_device(text="Start chat").click()
+    time.sleep(2)
+    
+    # Select contact
+    receiver_device(text="AAAAA").click()
+    time.sleep(2)
+    
+    # Select a specific number
+    receiver_device(text="Mobile+91 84486 97488").click()
+    time.sleep(2)
+    
+    # Perform a long press on the element
+    element_xpath = '//*[@resource-id="com.google.android.inputmethod.latin:id/key_pos_bottom_symbol_1"]/android.widget.LinearLayout[1]/android.widget.ImageView[1]'
+    element = receiver_device.xpath(element_xpath)
+    element.long_click()
+    
+    # Navigate back
+    receiver_device(resourceId="com.android.systemui:id/back").click()
+    time.sleep(2)
+    
+    # Click on "Text message"
+    receiver_device(text="Text message").click()
+    time.sleep(2)
+    
+    # Navigate to settings
+    settings_element_xpath = '//*[@content-desc="Settings"]/android.widget.FrameLayout[1]'
+    receiver_device.xpath(settings_element_xpath).click()
+    time.sleep(2)
+    
+    # Navigate to Dictionary
+    receiver_device(resourceId="android:id/title", text="Dictionary").click()
+    time.sleep(2)
+    
+    # Navigate to Personal dictionary
+    receiver_device(text="Personal dictionary").click()
+    time.sleep(2)
+    
+    # Navigate to All languages
+    receiver_device(resourceId="android:id/title", text="All languages").click()
+    time.sleep(2)
+    
+    # Select a word to add
+    receiver_device(resourceId="com.google.android.inputmethod.latin:id/0_resource_name_obfuscated").click()
+    time.sleep(2)
+    
+    # Type a word and its shortcut
+    receiver_device(text="Type a word").set_text("Hello")
+    time.sleep(2)
+    receiver_device(text="Optional shortcut").set_text("Hi")
+    time.sleep(2)
+    
+    # Navigate back
+    receiver_device(resourceId="com.android.systemui:id/back").click()
+    time.sleep(2)
+    
+    # Check if the added word is present
+    word_check_result = receiver_device(resourceId="com.google.android.inputmethod.latin:id/0_resource_name_obfuscated", text="Hello")
+    if word_check_result.exists:
+        result = "Word was added successfully"
+    else:
+        result = "Word was not added"
+    
+    # Create a DataFrame to store the test result
+    test_case = "dictionary_test"
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    test_results_df = pd.DataFrame({
+        'Serial No': [receiver_device_serial],
+        'Test Case No': [test_case],
+        'Result': [result],
+        'Timestamp': [timestamp]
+    })
+    
+    # Save the DataFrame to an Excel file
+    excel_filename = 'test_results.xlsx'
+    try:
+        existing_data = pd.read_excel(excel_filename)
+        updated_data = pd.concat([existing_data, test_results_df], ignore_index=True)
+        updated_data.to_excel(excel_filename, index=False)
+        print("Test result appended to", excel_filename)
+    except FileNotFoundError:
+        test_results_df.to_excel(excel_filename, index=False)
+        print("Test result saved to", excel_filename)
+
+    # Print the test result
+    print(result)
+
+if __name__ == "__main__":
+    main()
