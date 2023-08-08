@@ -1,0 +1,42 @@
+import uiautomator2 as ui2
+import time
+
+# Connect to the device
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Test case information
+test_case = "message_send_test"
+timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+# Navigate to the Messages app and start a chat
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Start chat").click()
+time.sleep(2)
+
+# Enter recipient's name and start composing the message
+receiver_device.xpath('//android.widget.ScrollView').click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').set_text("Shubham")
+time.sleep(2)
+receiver_device(text="Shubham").click()
+time.sleep(2)
+receiver_device(text="RCS message").set_text("THISISSHUBHAMPALSINGH")
+time.sleep(2)
+
+# Send the message
+receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+time.sleep(2)
+
+# Press the home button to exit the app
+receiver_device.press("home")
+
+# Log the test result
+result = "Message sent"
+test_results = [{'Serial No': receiver_device_serial, 'Test Case No': test_case, 'Result': result, 'Timestamp': timestamp}]
+
+# Print the test results
+print("Test Results:")
+for test_result in test_results:
+    print(f"Serial No: {test_result['Serial No']}, Test Case No: {test_result['Test Case No']}, Result: {test_result['Result']}")
