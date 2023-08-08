@@ -1,0 +1,65 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+from datetime import datetime, timedelta
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from openpyxl import Workbook
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# ADB command to retrieve battery information
+adb_command = ['adb', '-s', receiver_device_serial, 'shell', 'dumpsys', 'battery']
+
+# Execute the ADB command and capture the output
+result = subprocess.run(adb_command, capture_output=True, text=True)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ... (other ADB commands and device initialization)
+
+# Create a new Excel workbook and add a worksheet
+workbook = Workbook()
+worksheet = workbook.active
+worksheet.title = "Test Results"
+
+# Add column headers
+worksheet["A1"] = "Serial No"
+worksheet["B1"] = "Description of Test Case"
+worksheet["C1"] = "Pass/Fail"
+worksheet["D1"] = "Timestamp"
+
+# Function to capture a screenshot
+def capture_screenshot(device):
+    screenshot = device.screenshot(format="opencv")
+    return screenshot
+
+# Initiate a call and decline it
+receiver_device(resourceId="com.google.android.apps.messaging:id/action_call").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/action0", text="DECLINE").click()
+
+# Check for red screen and black screen
+# ... (your existing code)
+
+# Determine the pass/fail status based on conditions
+if red_detected or black_detected:
+    pass_fail = "Fail"
+else:
+    pass_fail = "Pass"
+
+# Get current timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Add the test result to the Excel worksheet
+worksheet.append([1, "Call and Decline Test", pass_fail, timestamp])
+
+# Save the workbook
+workbook.save("test_results.xlsx")
