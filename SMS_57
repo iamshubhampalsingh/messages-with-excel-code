@@ -1,0 +1,54 @@
+import uiautomator2 as ui2
+import time
+import pandas as pd
+
+def main():
+    # Connect to the device
+    receiver_device_serial = "192.168.168.16:5555"
+    receiver_device = ui2.Device(receiver_device_serial)
+
+    # Scroll to the end of the screen
+    receiver_device(scrollable=True).scroll.toEnd(20)
+    time.sleep(2)
+
+    # Scroll further to the end of the screen
+    receiver_device(scrollable=True).scroll.toEnd(10)
+    time.sleep(2)
+
+    # Click on the "OfficeSuite" element
+    receiver_device(text="OfficeSuite").click()
+    time.sleep(2)
+
+    result = ""
+    if receiver_device(text="Getting_Started.pdf").exists():
+        result = "Pdf available"
+    else:
+        result = "Pdf not available"
+
+    # Create a DataFrame to store the test result
+    test_case = "pdf_check_test"
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+    test_results_df = pd.DataFrame({
+        'Serial No': [receiver_device_serial],
+        'Test Case No': [test_case],
+        'Result': [result],
+        'Timestamp': [timestamp]
+    })
+
+    # Save the DataFrame to an Excel file
+    excel_filename = 'test_results.xlsx'
+    try:
+        existing_data = pd.read_excel(excel_filename)
+        updated_data = pd.concat([existing_data, test_results_df], ignore_index=True)
+        updated_data.to_excel(excel_filename, index=False)
+        print("Test result appended to", excel_filename)
+    except FileNotFoundError:
+        test_results_df.to_excel(excel_filename, index=False)
+        print("Test result saved to", excel_filename)
+
+    # Print the test result
+    print(result)
+
+if __name__ == "__main__":
+    main()
