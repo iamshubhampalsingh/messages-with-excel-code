@@ -1,0 +1,55 @@
+import uiautomator2 as ui2
+import time
+import pandas as pd
+
+# Connect to the devices
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Test case information
+test_case = "message_delivery_test"
+timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+# Perform actions to send a message
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Start chat").click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').set_text("Shubham")
+time.sleep(2)
+receiver_device(text="Shubham").click()
+time.sleep(2)
+receiver_device(text="RCS message").set_text("THISISSHUBHAMPALSINGH")
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+time.sleep(2)
+
+# Check if message is delivered
+if receiver_device(resourceId="com.google.android.apps.messaging:id/status_icon").exists():
+    result = "Message is delivered"
+else:
+    result = "Message is not delivered"
+
+# Create a DataFrame to store the test result
+test_results_df = pd.DataFrame({
+    'Serial No': [receiver_device_serial],
+    'Test Case No': [test_case],
+    'Result': [result],
+    'Timestamp': [timestamp]
+})
+
+# Save the DataFrame to an Excel file
+excel_filename = 'test_results.xlsx'
+try:
+    existing_data = pd.read_excel(excel_filename)
+    updated_data = pd.concat([existing_data, test_results_df], ignore_index=True)
+    updated_data.to_excel(excel_filename, index=False)
+    print("Test result appended to", excel_filename)
+except FileNotFoundError:
+    test_results_df.to_excel(excel_filename, index=False)
+    print("Test result saved to", excel_filename)
+
+# Print the test result
+print(result)
