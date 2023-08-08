@@ -1,0 +1,88 @@
+import uiautomator2 as ui2
+import subprocess
+import time
+import pandas as pd
+from datetime import datetime
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Device serial number of the sender device
+sender_device_serial = "cf611ff9"
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device(sender_device_serial)
+
+# Define the package name and activity name of the Gmail app
+package_name = "com.google.android.gm"
+activity_name = "com.google.android.gm.ConversationListActivityGmail"
+
+# ADB command to start the Gmail app on the receiver device
+receiver_adb_command = ["adb", "-s", receiver_device_serial, "shell", "am", "start", "-n", f"{package_name}/{activity_name}"]
+
+# ADB command to start the Gmail app on the sender device
+sender_adb_command = ["adb", "-s", sender_device_serial, "shell", "am", "start", "-n", f"{package_name}/{activity_name}"]
+
+# Execute the ADB commands on both devices
+subprocess.run(receiver_adb_command)
+subprocess.run(sender_adb_command)
+
+# Wait for the Gmail app to open
+time.sleep(5)
+
+# Compose and send an email from sender to receiver
+sender_device(resourceId="com.google.android.gm:id/compose_button").click()
+time.sleep(2)
+# Set email recipient
+recipient_email = "shubhampalsingh385@gmail.com"
+recipient_field = sender_device(resourceId="com.google.android.gm:id/to").set_text(recipient_email)
+time.sleep(2)
+# Tap on the first suggested recipient
+suggested_recipient = sender_device(resourceId="com.google.android.gm:id/recipient_suggestion")
+if suggested_recipient.exists():
+    suggested_recipient.click()
+time.sleep(2)
+# Compose email subject and content
+email_subject = "Test Email"
+email_content = "Hello, this is a test email."
+sender_device(resourceId="com.google.android.gm:id/subject").set_text(email_subject)
+sender_device(resourceId="com.google.android.gm:id/body").set_text(email_content)
+time.sleep(2)
+# Send the email
+sender_device(resourceId="com.google.android.gm:id/send").click()
+time.sleep(5)
+
+# Check if the email notification is received on the receiver's device
+receiver_device(resourceId="android:id/list").swipe("up")
+time.sleep(2)
+notification_received = receiver_device(resourceId="com.google.android.gm:id/senders", text=recipient_email).exists()
+
+# Create a timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Create a dictionary to store the data
+data = {
+    "Timestamp": [timestamp],
+    "Recipient Email": [recipient_email],
+    "Notification Received": [notification_received]
+}
+
+# Create a DataFrame from the data
+df = pd.DataFrame(data)
+
+# Define the Excel file path
+excel_file_path = "email_notifications.xlsx"
+
+# Check if the Excel file already exists
+if os.path.exists(excel_file_path):
+    existing_df = pd.read_excel(excel_file_path)
+    df = pd.concat([existing_df, df], ignore_index=True)
+
+# Write the DataFrame to the Excel file
+df.to_excel(excel_file_path, index=False)
+
+# Print the result
+print("Email data saved to Excel file:", excel_file_path)
