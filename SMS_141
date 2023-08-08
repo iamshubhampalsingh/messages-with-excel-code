@@ -1,0 +1,44 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from datetime import datetime
+import openpyxl
+
+# ... (other imports and setup code)
+
+# Define a function to log results and save to Excel
+def log_result(serial, description, status):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    result_row = [serial, description, status, timestamp]
+    results_sheet.append(result_row)
+    print(f"Serial: {serial} | Description: {description} | Status: {status} | Timestamp: {timestamp}")
+
+# ... (other setup code)
+
+# Create an Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+results_sheet = workbook.active
+results_sheet.title = "Results"
+results_sheet.append(["Serial No", "Description", "Status", "Timestamp"])
+
+# ... (existing code for interacting with devices)
+
+num_runs = 10
+for run in range(num_runs):
+    try:
+        # ... (existing code for sending messages)
+
+        if receiver_device(resourceId="android:id/action0", text="REPLY").exists():
+            log_result(receiver_device_serial, f"Run {run+1}: Message sent successfully", "Pass")
+            # ... (existing code for replying)
+        else:
+            log_result(receiver_device_serial, f"Run {run+1}: Message not sent successfully", "Fail")
+    except Exception as e:
+        log_result(receiver_device_serial, f"Run {run+1}: Exception - {str(e)}", "Fail")
+
+# ... (other cleanup code)
+
+# Save the results to an Excel file
+excel_filename = "results.xlsx"
+workbook.save(excel_filename)
+print(f"Results saved to {excel_filename}")
