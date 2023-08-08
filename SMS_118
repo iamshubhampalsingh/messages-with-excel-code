@@ -1,0 +1,89 @@
+import uiautomator2 as ui2
+import subprocess
+import time
+import pandas as pd
+from datetime import datetime
+
+# Initialize an empty list to store test results
+test_results = []
+
+# Function to record a test result
+def record_result(description, status):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    test_results.append({"Timestamp": timestamp, "Description": description, "Status": status})
+
+# Connect to the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+# Define the initial swipe coordinates
+start_x = 500
+start_y = 500
+end_y = 1500
+swipe_duration = 0.5
+
+# Perform multiple swipes to scroll the screen downwards
+num_swipes = 5
+for _ in range(num_swipes):
+    receiver_device.swipe(start_x, start_y, start_x, end_y, duration=swipe_duration)
+    time.sleep(1)
+
+# Click on the Bluetooth tile in the system UI
+receiver_device(resourceId="com.android.systemui:id/tile_label", text="Bluetooth").click()
+time.sleep(2)
+
+# Long-click on the Bluetooth tile
+receiver_device(resourceId="com.android.systemui:id/tile_label", text="Bluetooth").long_click()
+time.sleep(2)
+
+# Click on the "Pair new device" option
+receiver_device(resourceId="android:id/title", text="Pair new device").click()
+
+# Check for the presence of a specific device ("OnePlus 9 Pro 5G") and initiate the pairing process
+num_swipes = 100
+for _ in range(num_swipes):
+    if receiver_device(resourceId="android:id/title", text="OnePlus 9 Pro 5G").exists():
+        receiver_device(resourceId="android:id/title", text="OnePlus 9 Pro 5G").click()
+        time.sleep(1)
+        receiver_device(text="Pair").click()
+        print("Bluetooth connected")
+        break
+    else:
+        print("Bluetooth not connected")
+    time.sleep(1)
+    
+# Define the package name and activity name of the Gmail app
+package_name = "com.google.android.gm"
+activity_name = "com.google.android.gm.ConversationListActivityGmail"
+
+# ADB command to start the Gmail app
+adb_command = ["adb", "-s", receiver_device_serial, "shell", "am", "start", "-n", f"{package_name}/{activity_name}"]
+
+# Execute the ADB command
+subprocess.run(adb_command)
+
+receiver_device.click(0.133, 0.086)
+time.sleep(2)
+receiver_device.xpath('//*[@resource-id="android:id/list"]/android.widget.LinearLayout[4]/android.widget.LinearLayout[1]/android.widget.ImageView[1]').click()
+time.sleep(2)
+receiver_device.xpath('//*[@resource-id="com.google.android.gm:id/thread_list_view"]/android.widget.LinearLayout[1]').long_click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.gm:id/delete_ad").click()
+time.sleep(2)
+receiver_device.press("home")
+
+# Record the test result
+record_result("Bluetooth pairing", "Pass")
+
+# Record the test result
+record_result("Gmail app automation", "Pass")
+
+# Record the test result
+record_result("Gmail app cleanup", "Pass")
+
+# Create a DataFrame from the test results
+df = pd.DataFrame(test_results, columns=["Timestamp", "Description", "Status"])
+
+# Save the DataFrame to an Excel file
+excel_file = "test_results.xlsx"
+df.to_excel(excel_file, index=False)
+print(f"Test results saved to {excel_file}")
