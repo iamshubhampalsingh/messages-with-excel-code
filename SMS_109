@@ -1,0 +1,109 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from datetime import datetime, timedelta
+import pandas as pd
+import os
+
+# ... (Other code remains unchanged)
+
+# Create a DataFrame to store the results
+results_df = pd.DataFrame(columns=['Serial No', 'Description', 'Result', 'Timestamp'])
+
+# Connect to the devices
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Run the adb command to get the battery percentage
+# ... (Rest of the code remains unchanged)
+
+# Add results to the DataFrame
+results_df.loc[len(results_df)] = ['Receiver', 'Battery Percentage at start of alarm', battery_percentage, datetime.now()]
+
+# Get the current app package and activity
+current_app = receiver_device.current_app()
+# Get the current time
+current_time = datetime.now()
+
+# Calculate the alarm time (5 minutes from the current time)
+alarm_time = current_time + timedelta(minutes=5)
+print(alarm_time)
+
+# Extract the hour and minute from the alarm time
+hour = str(alarm_time.hour)
+minute = str(alarm_time.minute)
+
+# Open the Clock app
+receiver_device.press("home")
+receiver_device(scrollable=True).scroll.toEnd()
+time.sleep(2)
+receiver_device(resourceId="com.android.launcher3:id/icon", text="Clock").click()
+# Set the alarm time
+receiver_device(resourceId="com.google.android.deskclock:id/fab").click()
+time.sleep(2)
+
+# Locate the text box for entering the hour value and click on it
+receiver_device.xpath('//*[@resource-id="com.google.android.deskclock:id/material_hour_text_input"]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]').click()
+text_box1 = receiver_device.xpath('//*[@resource-id="com.google.android.deskclock:id/material_hour_text_input"]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]')
+if text_box1.exists:
+    receiver_device.click(0.437, 0.911)
+    receiver_device.send_keys(hour)
+    
+time.sleep(2)
+receiver_device.xpath('//*[@resource-id="com.google.android.deskclock:id/material_minute_text_input"]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]').click()
+text_box2 = receiver_device.xpath('//*[@resource-id="com.google.android.deskclock:id/material_minute_text_input"]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]')
+if text_box2.exists:
+    receiver_device.click(0.437, 0.911)
+    receiver_device.send_keys(minute)
+
+receiver_device(text="OK").click()
+time.sleep(2)
+receiver_device(resourceId="com.android.systemui:id/center_group").click()
+time.sleep(20)
+
+
+
+# Connect to the devices
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a Device object for the sender device
+sender_device_serial = "cf611ff9"
+sender_device = ui2.Device(sender_device_serial)
+
+# Perform interactions on the receiver device
+time.sleep(2)
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Start chat").click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').set_text("Shubham")
+time.sleep(2)
+receiver_device(text="Shubham").click()
+time.sleep(2)
+receiver_device(text="RCS message").set_text("THISISSHUBHAMPALSINGH")
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+time.sleep(2)
+num_runs = 5  # Stop the alarm after 5 seconds (adjust as needed)
+for run in range(num_runs):
+    time.sleep(1)
+    if receiver_device(text="Alarm").exists():
+        receiver_device(text="STOP").click()
+
+print("Alarm stopped")
+
+# Add results to the DataFrame
+results_df.loc[len(results_df)] = ['Receiver', 'Stop Alarm', 'Pass', datetime.now()]
+
+# Save the DataFrame to an Excel file
+excel_filename = 'test_results.xlsx'
+results_df.to_excel(excel_filename, index=False)
+print("Results saved to", excel_filename)
