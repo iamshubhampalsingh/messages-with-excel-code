@@ -1,0 +1,30 @@
+import uiautomator2 as ui2
+import time
+
+# Connect to the device
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Test case information
+test_case = "contact_navigation_test"
+timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+# Navigate to the Messages app and select a contact
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Shubham").click()
+time.sleep(2)
+
+# Check if the correct contact's conversation is opened
+if receiver_device(text="Texting with Shubham  (SMS/MMS)").exists():
+    result = "Able to get into correct contact"
+else:
+    result = "Not Able to get into correct contact"
+
+# Log the test result
+test_results = [{'Serial No': receiver_device_serial, 'Test Case No': test_case, 'Result': result, 'Timestamp': timestamp}]
+
+# Print the test results
+print("Test Results:")
+for test_result in test_results:
+    print(f"Serial No: {test_result['Serial No']}, Test Case No: {test_result['Test Case No']}, Result: {test_result['Result']}")
