@@ -1,0 +1,74 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+from datetime import datetime, timedelta
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from openpyxl import Workbook
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ... (other ADB commands and device initialization)
+
+# Create a new Excel workbook and add a worksheet
+workbook = Workbook()
+worksheet = workbook.active
+worksheet.title = "Test Results"
+
+# Add column headers
+worksheet["A1"] = "Serial No"
+worksheet["B1"] = "Description of Test Case"
+worksheet["C1"] = "Pass/Fail"
+worksheet["D1"] = "Timestamp"
+
+# Function to capture a screenshot
+def capture_screenshot(device):
+    screenshot = device.screenshot(format="opencv")
+    return screenshot
+
+# Function to check for red screen
+def is_red_screen(device):
+    screenshot = capture_screenshot(device)
+    # ... (red screen detection logic)
+    return red_ratio > 0.01  # Adjust the threshold as needed
+
+# Function to check for black screen
+def is_black_screen(device):
+    screenshot = capture_screenshot(device)
+    # ... (black screen detection logic)
+    return black_ratio > 0.95  # Adjust the threshold as needed
+
+# ... (other functions)
+
+# Compose the message
+# ... (your existing code)
+
+# Answer the call
+receiver_device(resourceId="android:id/action0", text="ANSWER").click()
+time.sleep(60)
+receiver_device(resourceId="com.google.android.dialer:id/incall_end_call").click()
+
+# Check for red screen and black screen
+red_detected = is_red_screen(receiver_device)
+black_detected = is_black_screen(receiver_device)
+
+# Determine the pass/fail status based on conditions
+if red_detected or black_detected:
+    pass_fail = "Fail"
+else:
+    pass_fail = "Pass"
+
+# Get current timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Add the test result to the Excel worksheet
+worksheet.append([1, "Answer Call Test", pass_fail, timestamp])
+
+# Save the workbook
+workbook.save("test_results.xlsx")
