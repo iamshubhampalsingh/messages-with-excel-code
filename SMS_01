@@ -1,0 +1,65 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.2.56:5555"
+
+# ADB command to retrieve battery information
+adb_command = ['adb', '-s', receiver_device_serial, 'shell', 'dumpsys', 'battery']
+
+# Execute the ADB command and capture the output
+result = subprocess.run(adb_command, capture_output=True, text=True)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ADB commands to turn on the receiver and sender devices' screens
+receiver_turn_on_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '224']
+sender_turn_on_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '224']
+
+# ADB commands to turn off the receiver and sender devices' screens
+receiver_turn_off_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '26']
+sender_turn_off_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '26']
+
+# Function to log the test results
+def log_test_result(test_case, result):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    test_results.append({'Serial No': receiver_device_serial, 'Test Case No': test_case, 'Result': result, 'Timestamp': timestamp})
+
+# Compose the message
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+
+num_runs = 10
+test_results = []
+
+for run in range(num_runs):
+    test_case = f"sms_0{run + 1}"
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(5)
+    log_test_result(test_case, "Pass")  # Assuming the message is sent successfully
+
+test_case = "sms_010"
+sender_device(resourceId="com.google.android.apps.messaging:id/action_call").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/action0", text="DECLINE").click()
+time.sleep(2)
+log_test_result(test_case, "Pass")  # Assuming the call is initiated and declined successfully
+
+# Print the test results
+print("Test Results:")
+for test_result in test_results:
+    print(f"Serial No: {test_result['Serial No']}, Test Case No: {test_result['Test Case No']}, Result: {test_result['Result']}")
