@@ -1,0 +1,146 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import openpyxl
+from datetime import datetime
+
+# Connect to the device
+receiver_device_serial = "192.168.65.53:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+time.sleep(2)  # Wait for 2 seconds
+
+# Define the initial swipe coordinates
+start_x = 500
+start_y = 500
+end_y = 1500
+swipe_duration = 0.5
+
+# Perform multiple swipes to scroll the screen downwards
+num_swipes = 5  # Adjust the number of swipes as needed
+for _ in range(num_swipes):
+ receiver_device.swipe(start_x, start_y, start_x, end_y, duration=swipe_duration)
+ time.sleep(1)  # Adjust the delay between swipes if necessary
+
+receiver_device(resourceId="com.android.systemui:id/tile_label", text="Bluetooth").click()
+time.sleep(2)
+receiver_device(resourceId="com.android.systemui:id/tile_label", text="Bluetooth").long_click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Pair new device").click()
+
+num_swipes = 50  # Adjust the number of swipes as needed
+for _ in range(num_swipes):
+    if receiver_device(resourceId="android:id/title", text="OnePlus 9 Pro 5G").exists():
+        receiver_device(resourceId="android:id/title", text="OnePlus 9 Pro 5G").click()
+        time.sleep(1)
+        receiver_device(text="Pair").click()
+        print("Bluetooth conneted")
+        break # Break when bluetooth is connected
+    else:
+        print("Bluetooth not connected")
+    time.sleep(1)  # Adjust the delay between swipes if necessary
+receiver_device(text="Photos").click()
+time.sleep(2)
+receiver_device(description="Photo taken on 07-Jul-2023 11:44:01 am").long_click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.photos:id/photos_allphotos_menu_item_share").click()
+time.sleep(2)
+receiver_device.xpath('//*[@resource-id="com.google.android.apps.photos:id/peoplekit_third_party_scroll_view"]/android.widget.RelativeLayout[4]/android.widget.ImageView[1]').click()
+time.sleep(10)
+receiver_device(scrollable=True).scroll(steps=10, percent=70)
+time.sleep(2)
+receiver_device(text="Bluetooth").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="OnePlus 9 Pro 5G").click()
+time.sleep(20)
+receiver_device.press("home")
+time.sleep(2)
+receiver_device(text="Phone").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.dialer:id/dialpad_fab").click()
+receiver_device(text='8').click()
+receiver_device(text='5').click()
+receiver_device(text='2').click()
+receiver_device(text='7').click()
+receiver_device(text='7').click()
+receiver_device(text='4').click()
+receiver_device(text='6').click()
+receiver_device(text='8').click()
+receiver_device(text='9').click()
+receiver_device(text='7').click()
+receiver_device(resourceId="com.android.dialer:id/dialpad_floating_action_button").click()
+receiver_device.press("home")    
+# Click on the "Messages" element
+receiver_device(text="Messages").click()
+time.sleep(2)  # Wait for 2 seconds
+
+# Click on the "Start chat" element
+receiver_device(text="Start chat").click()
+time.sleep(2)  # Wait for 2 seconds
+
+# Click on the "Shubham" element
+receiver_device.xpath('//android.widget.ScrollView').set_text("Shubham")
+time.sleep(1)
+
+receiver_device(text="Shubham").click()
+time.sleep(2)
+
+receiver_device(resourceId="com.google.android.apps.messaging:id/plus_button").click()
+time.sleep(1)
+
+receiver_device(resourceId="com.google.android.apps.messaging:id/shortcut_title", text="GIFs").click()
+time.sleep(2)
+
+receiver_device(resourceId="com.google.android.apps.messaging:id/gifsticker_category_label", text="Awesome").click()
+time.sleep(2)
+
+receiver_device(description="Thats Awesome GIF").click()
+time.sleep(2)
+
+receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+time.sleep(2)
+
+if receiver_device(resourceId="com.google.android.apps.messaging:id/status_icon").exists():
+    print("The Status report is sent")
+else:
+    print("The status report is not sent")
+# Capture a screenshot
+screenshot = receiver_device.screenshot()
+
+# Get the color of a specific pixel on the screen
+pixel_color = screenshot.getpixel((100, 100))  # Change the coordinates as needed
+
+# Check if the screen is black (all RGB values are 0)
+if pixel_color == (0, 0, 0):
+    print("Screen is black")
+elif pixel_color == (255, 0, 0):  # Assuming red color is (255, 0, 0)
+    print("Screen is red")
+else:
+    print("Screen is neither black nor red")
+
+if receiver_device(resourceId="com.google.android.apps.messaging:id/message_lock_icon").exists():
+    print("MESSAGE SENT WITHOUT ANY LAG")
+else:
+    print("MESSAGE SENT WITH ANY LAG")
+
+# Create a new Excel workbook and sheet
+workbook = openpyxl.Workbook()
+sheet = workbook.active
+sheet.append(["Serial No", "Description", "Result", "Timestamp"])
+
+def log_result(serial, description, result):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append([serial, description, result, timestamp])
+
+serial_number = 1
+
+log_result(serial_number, "Bluetooth Connection", "Connected" if bluetooth_connected else "Not Connected")
+serial_number += 1
+
+log_result(serial_number, "Sent GIF Message", "Pass" if receiver_device(resourceId="com.google.android.apps.messaging:id/status_icon").exists() else "Fail")
+serial_number += 1
+
+# Save the Excel file
+result_file = "test_results.xlsx"
+workbook.save(result_file)
+print(f"Results logged in {result_file}")
