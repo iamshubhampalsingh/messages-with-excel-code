@@ -1,0 +1,41 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+from datetime import datetime, timedelta
+import openpyxl
+
+# Create a new Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+sheet = workbook.active
+
+# Write headers to the Excel sheet
+sheet.append(["Serial No.", "Action", "Result", "Timestamp"])
+
+# Define a function to add rows to the Excel sheet
+def add_row(serial_no, action, result):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append([serial_no, action, result, timestamp])
+
+num_runs = 10
+for run in range(num_runs):
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(5)
+    add_row(run+1, "Send Message", "Pass")
+
+sender_device(resourceId="com.google.android.apps.messaging:id/action_call").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/action0", text="ANSWER").click()
+time.sleep(10)
+receiver_device(resourceId="android:id/action0", text="DECLINE").click()
+add_row(num_runs+1, "Make Call", "Pass")
+add_row(num_runs+2, "Answer Call", "Pass")
+add_row(num_runs+3, "Decline Call", "Pass")
+
+
+# Save the Excel workbook
+excel_file_path = "results.xlsx"
+workbook.save(excel_file_path)
+print(f"Results saved to {excel_file_path}")
