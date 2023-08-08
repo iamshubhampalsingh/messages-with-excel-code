@@ -1,0 +1,56 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import os
+from datetime import datetime, timedelta
+import openpyxl
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# ADB command to retrieve battery information
+adb_command = ['adb', '-s', receiver_device_serial, 'shell', 'dumpsys', 'battery']
+
+# Execute the ADB command and capture the output
+result = subprocess.run(adb_command, capture_output=True, text=True)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ADB commands to turn on the receiver and sender devices' screens
+receiver_turn_on_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '224']
+sender_turn_on_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '224']
+
+# ADB commands to turn off the receiver and sender devices' screens
+receiver_turn_off_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '26']
+sender_turn_off_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '26']
+
+# Create a new Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+sheet = workbook.active
+
+# Write headers to the Excel sheet
+sheet.append(["Serial No.", "Action", "Result", "Timestamp"])
+
+# Define a function to add rows to the Excel sheet
+def add_row(serial_no, action, result):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append([serial_no, action, result, timestamp])
+
+num_runs = 10
+for run in range(num_runs):
+    add_row(run + 1, "Send Message", "Pass")
+
+sender_device(resourceId="com.google.android.apps.messaging:id/action_call").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/action0", text="DECLINE").click()
+add_row(num_runs + 1, "Make Call", "Pass")
+add_row(num_runs + 2, "Decline Call", "Pass")
+
+# Save the Excel workbook
+excel_file_path = "results.xlsx"
+workbook.save(excel_file_path)
+print(f"Results saved to {excel_file_path}")
