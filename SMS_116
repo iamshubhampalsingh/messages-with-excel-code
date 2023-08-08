@@ -1,0 +1,28 @@
+import uiautomator2 as ui2
+import subprocess
+import time
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Define the package name and activity name of the Gmail app
+package_name = "com.google.android.gm"
+activity_name = "com.google.android.gm.ConversationListActivityGmail"
+
+# ADB command to start the Gmail app
+adb_command = ["adb", "-s", receiver_device_serial, "shell", "am", "start", "-n", f"{package_name}/{activity_name}"]
+
+# Execute the ADB command
+subprocess.run(adb_command)
+
+receiver_device.click(0.133, 0.086)
+time.sleep(2)
+receiver_device.xpath('//*[@resource-id="android:id/list"]/android.widget.LinearLayout[4]/android.widget.LinearLayout[1]/android.widget.ImageView[1]').click()
+time.sleep(2)
+receiver_device.xpath('//*[@resource-id="com.google.android.gm:id/thread_list_view"]/android.widget.LinearLayout[1]').long_click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.gm:id/delete_ad").click()
+time.sleep(2)
+receiver_device.press("home")
