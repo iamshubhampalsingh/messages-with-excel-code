@@ -1,0 +1,52 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from datetime import datetime, timedelta
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# ADB command to check if the device is online
+adb_command = ['adb', 'devices']
+
+# Execute the ADB command and capture the output
+result = subprocess.run(adb_command, capture_output=True, text=True)
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Function to check if search is successful
+def is_search_successful():
+    if receiver_device(text="Shubham").exists():
+        return True
+    else:
+        return False
+
+# Test case information
+test_case = "search_test"
+timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+# Perform the search actions
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/open_search_bar_text_view").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/zero_state_search_box_auto_complete").set_text("Shubham")
+time.sleep(2)
+receiver_device(text="Shubham").click()
+time.sleep(2)
+
+# Check and log the result
+search_result = is_search_successful()
+if search_result:
+    result = "Search is successful"
+else:
+    result = "Search is not successful"
+
+# Log the test result
+test_results = [{'Serial No': receiver_device_serial, 'Test Case No': test_case, 'Result': result, 'Timestamp': timestamp}]
+
+# Print the test results
+print("Test Results:")
+for test_result in test_results:
+    print(f"Serial No: {test_result['Serial No']}, Test Case No: {test_result['Test Case No']}, Result: {test_result['Result']}")
