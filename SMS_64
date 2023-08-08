@@ -1,0 +1,104 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import openpyxl
+from datetime import datetime
+
+# Compose and send messages from the sender device
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+
+num_runs = 10
+for run in range(num_runs):
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+
+# Turn on the receiver device's screen
+subprocess.run(receiver_turn_on_command, capture_output=True)
+
+# Get the screen dimensions of the receiver device
+screen_info = receiver_device.info
+screen_width = screen_info["displayWidth"]
+screen_height = screen_info["displayHeight"]
+
+# Adjust the swipe coordinates based on the desired swipe direction
+start_x = screen_width // 2
+start_y = screen_height - 100
+end_x = screen_width // 2
+end_y = screen_height // 2
+
+# Swipe up on the receiver device
+receiver_device.swipe(start_x, start_y, end_x, end_y)
+
+# Turn off the sender device's screen
+subprocess.run(sender_turn_off_command, capture_output=True)
+
+# Send messages from the receiver device to the sender device
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Start chat").click()
+time.sleep(2)
+receiver_device(text="Shubham").click()
+receiver_device(text="Mobile+91 8527746897").click()
+
+num_runs = 10
+for run in range(num_runs):
+    receiver_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+
+# Turn on the sender device's screen
+subprocess.run(sender_turn_on_command, capture_output=True)
+
+# Get the screen dimensions of the receiver device
+screen_info = receiver_device.info
+screen_width = screen_info["displayWidth"]
+screen_height = screen_info["displayHeight"]
+
+# Adjust the swipe coordinates based on the desired swipe direction
+start_x = screen_width // 2
+start_y = screen_height - 100
+end_x = screen_width // 2
+end_y = screen_height // 2
+
+# Swipe up on the receiver device
+sender_device.swipe(start_x, start_y, end_x, end_y)
+
+# Create a new Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+sheet = workbook.active
+
+# Add headers to the sheet
+sheet.append(["Serial No", "Test Case", "Result", "Timestamp"])
+
+# Helper function to add results to the sheet
+def add_result(serial_no, test_case, result):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append([serial_no, test_case, result, timestamp])
+
+# Turn off the receiver device's screen
+subprocess.run(receiver_turn_off_command, capture_output=True)
+add_result(1, "Turn off receiver screen", "Pass")
+
+# ... (Perform other actions and add corresponding results)
+
+# Save the results to an Excel file
+result_file = "test_results.xlsx"
+workbook.save(result_file)
+
+# Close the receiver and sender devices' screens
+subprocess.run(receiver_turn_on_command, capture_output=True)
+add_result(2, "Turn on receiver screen", "Pass")
+
+# ... (Perform other actions and add corresponding results)
+
+# Save the results to an Excel file
+result_file = "test_results.xlsx"
+workbook.save(result_file)
