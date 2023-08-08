@@ -1,0 +1,51 @@
+import uiautomator2 as ui2
+import time
+
+# Connect to the device
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+time.sleep(2)  # Wait for 2 seconds
+
+# Click on the "Messages" element
+receiver_device(text="Messages").click()
+time.sleep(2)  # Wait for 2 seconds
+
+# Click on the "Start chat" element
+receiver_device(text="Start chat").click()
+time.sleep(2)  # Wait for 2 seconds
+
+# Click on the "Shubham" element
+receiver_device.xpath('//android.widget.ScrollView').set_text("Shubham")
+time.sleep(2)
+
+receiver_device(text="Shubham").click()
+
+time.sleep(2)
+
+# Set the message text
+receiver_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("Thisisshubhampalsingh")
+time.sleep(2)
+
+# Click on the microphone button
+receiver_device(resourceId="com.google.android.apps.messaging:id/audio_button_view_microphone_icon").click()
+time.sleep(2)
+
+if receiver_device(resourceId="com.google.android.apps.messaging:id/status_icon").exists():
+    print("Message delivered without interruption")
+else:
+    print("The message was not delivered")
+
+# Capture a screenshot
+screenshot = receiver_device.screenshot()
+
+# Get the color of a specific pixel on the screen
+pixel_color = screenshot.getpixel((100, 100))  # Change the coordinates as needed
+
+# Check if the screen is black (all RGB values are 0)
+if pixel_color == (0, 0, 0):
+    print("Screen is black")
+elif pixel_color == (255, 0, 0):  # Assuming red color is (255, 0, 0)
+    print("Screen is red")
+else:
+    print("Screen is neither black nor red")
