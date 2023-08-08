@@ -1,0 +1,51 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import openpyxl
+from datetime import datetime
+
+# ... (Previous code here)
+
+# Create a new Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+sheet = workbook.active
+
+# Add headers to the sheet
+sheet.append(["Serial No", "Test Case", "Result", "Timestamp"])
+
+# Helper function to add results to the sheet
+def add_result(serial_no, test_case, result):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append([serial_no, test_case, result, timestamp])
+
+# Turn off mobile data on the receiver device
+receiver_device(text="Off", description="Mobile data").click()
+time.sleep(2)
+add_result(1, "Turn off mobile data", "Pass")
+
+receiver_device(resourceId="com.android.systemui:id/center_group").click()
+time.sleep(2)
+add_result(2, "Open notification center", "Pass")
+
+# ... (Perform other actions and add corresponding results)
+
+# Execute the ADB command and capture the output
+result = subprocess.run(adb_command, capture_output=True, text=True)
+
+# Check the sleep state in the output
+output_lines = result.stdout.split('\n')
+sleep_state = None
+for line in output_lines:
+    if "mWakefulness=" in line:
+        sleep_state = line.split('=')[1]
+        break
+
+# Check the sleep state value and determine if the device is in deep sleep
+if sleep_state == "Dozing" or sleep_state == "DeepSleep":
+    add_result(3, "Check deep sleep state", "Pass")
+else:
+    add_result(3, "Check deep sleep state", "Fail")
+
+# Save the results to an Excel file
+result_file = "test_results.xlsx"
+workbook.save(result_file)
