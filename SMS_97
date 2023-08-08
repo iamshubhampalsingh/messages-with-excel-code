@@ -1,0 +1,82 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from openpyxl import Workbook
+from datetime import datetime
+
+# Connect to the devices
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a new Excel workbook and add a worksheet
+workbook = Workbook()
+worksheet = workbook.active
+worksheet.title = "RCS Delivery Report Results"
+
+# Add column headers
+worksheet["A1"] = "Serial No"
+worksheet["B1"] = "Description of Test Case"
+worksheet["C1"] = "Pass/Fail"
+worksheet["D1"] = "Timestamp"
+
+# Function to check if delivery report is seen
+def is_delivery_report_seen(device):
+    if device(resourceId="com.google.android.apps.messaging:id/status_icon").exists():
+        return "Pass"
+    else:
+        return "Fail"
+
+# Send RCS message and check delivery report for receiver device
+recipient_receiver = "Shubham"
+message_receiver = "THISISSHUBHAMPALSINGH"
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Start chat").click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').set_text(recipient_receiver)
+time.sleep(2)
+receiver_device(text=recipient_receiver).click()
+time.sleep(2)
+receiver_device(text="RCS message").set_text(message_receiver)
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+time.sleep(2)
+receiver_device.press("home")
+time.sleep(2)
+pass_fail_receiver = is_delivery_report_seen(receiver_device)
+
+# Send RCS message and check delivery report for sender device
+recipient_sender = "AAAAA"
+message_sender = "THISISSHUBHAMPALSINGH"
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device.xpath('//android.widget.ScrollView').click()
+time.sleep(2)
+sender_device.xpath('//android.widget.ScrollView').set_text(recipient_sender)
+time.sleep(2)
+sender_device(text=recipient_sender).click()
+time.sleep(2)
+sender_device(text="RCS message").set_text(message_sender)
+time.sleep(2)
+sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+time.sleep(2)
+sender_device.press("home")
+time.sleep(2)
+pass_fail_sender = is_delivery_report_seen(sender_device)
+
+# Get current timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Add the test results to the Excel worksheet
+worksheet.append([1, "Check Delivery Report for Receiver Device", pass_fail_receiver, timestamp])
+worksheet.append([2, "Check Delivery Report for Sender Device", pass_fail_sender, timestamp])
+
+# Save the workbook
+workbook.save("rcs_delivery_report_results.xlsx")
