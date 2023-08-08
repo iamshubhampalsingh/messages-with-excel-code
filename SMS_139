@@ -1,0 +1,35 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from datetime import datetime, timedelta
+
+# ... (other imports and setup code)
+
+# Define a function to log results
+def log_result(serial, description, status):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"Serial: {serial} | Description: {description} | Status: {status} | Timestamp: {timestamp}")
+
+# ... (other setup code)
+
+num_runs = 10
+for run in range(num_runs):
+    try:
+        sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+        time.sleep(2)
+        sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+        time.sleep(2)
+
+        if receiver_device(resourceId="android:id/action0", text="REPLY").exists():
+            log_result(receiver_device_serial, f"Run {run+1}: Message sent successfully", "Pass")
+            receiver_device(resourceId="android:id/action0", text="REPLY").click()
+            time.sleep(2)
+            receiver_device(resourceId="com.android.systemui:id/remote_input_text").set_text("Hello")
+            time.sleep(2)
+            receiver_device(resourceId="com.android.systemui:id/remote_input_send").click()
+            log_result(receiver_device_serial, f"Run {run+1}: Reply sent successfully", "Pass")
+        else:
+            log_result(receiver_device_serial, f"Run {run+1}: Message not sent successfully", "Fail")
+    except Exception as e:
+        log_result(receiver_device_serial, f"Run {run+1}: Exception - {str(e)}", "Fail")
+
