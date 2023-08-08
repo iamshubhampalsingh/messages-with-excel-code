@@ -1,0 +1,88 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from openpyxl import Workbook
+from datetime import datetime
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ADB command to retrieve battery information
+adb_command = ['adb', '-s', receiver_device_serial, 'shell', 'dumpsys', 'battery']
+
+# Initialize results recording
+results = []
+
+# Function to add result to the list
+def add_result(serial_number, description, result, timestamp):
+    results.append((serial_number, description, result, timestamp))
+
+def perform_test(description, test_function):
+    try:
+        test_function()  # Perform the test
+        add_result(len(results) + 1, description, "Pass", datetime.now())
+    except Exception as e:
+        add_result(len(results) + 1, description, "Fail", datetime.now())
+
+# Define your test steps as functions
+def test_compose_and_send_messages():
+    sender_device(text="Messages").click()
+    time.sleep(2)
+    sender_device(text="Start chat").click()
+    time.sleep(2)
+    sender_device(text="AAAAA").click()
+    sender_device(text="Mobile+91 84486 97488").click()
+
+    num_runs = 10
+    for run in range(num_runs):
+        sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+        time.sleep(2)
+        sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+        time.sleep(5)
+
+def test_make_and_end_call():
+    sender_device(resourceId="com.google.android.apps.messaging:id/action_call").click()
+    time.sleep(2)
+    receiver_device(resourceId="android:id/action0", text="ANSWER").click()
+    time.sleep(10)
+    receiver_device(resourceId="com.google.android.dialer:id/incall_end_call").click()
+
+def test_compose_and_send_messages_receiver():
+    receiver_device(text="Messages").click()
+    time.sleep(2)
+    receiver_device(text="Start chat").click()
+    time.sleep(2)
+    receiver_device(text="AAAAA").click()
+    receiver_device(text="Mobile+91 84486 97488").click()
+
+    num_runs = 10
+    for run in range(num_runs):
+        receiver_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+        time.sleep(2)
+        receiver_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+        time.sleep(5)
+
+# Perform the tests and record results
+perform_test("Compose and Send Messages from Sender", test_compose_and_send_messages)
+perform_test("Make and End Call", test_make_and_end_call)
+perform_test("Compose and Send Messages from Receiver", test_compose_and_send_messages_receiver)
+
+# Save results to an Excel file
+def save_results_to_excel(results):
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["Serial No", "Description", "Result", "Timestamp"])
+    
+    for serial, desc, result, timestamp in results:
+        ws.append([serial, desc, result, timestamp])
+    
+    wb.save("test_results.xlsx")
+
+# Save the results to an Excel file
+save_results_to_excel(results)
