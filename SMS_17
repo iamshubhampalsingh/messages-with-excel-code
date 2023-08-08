@@ -1,0 +1,68 @@
+import uiautomator2 as ui2
+import time
+import pandas as pd
+
+def main():
+    # Connect to the devices
+    receiver_device_serial = "192.168.168.16:5555"
+    receiver_device = ui2.Device(receiver_device_serial)
+    time.sleep(2)
+    
+    # Open Messages and Start Chat
+    receiver_device(text="Messages").click()
+    time.sleep(2)
+    receiver_device(text="Start chat").click()
+    time.sleep(2)
+    
+    # Click on an element using XPath
+    receiver_device.xpath('//android.widget.ScrollView').click()
+    time.sleep(2)
+    
+    # Typing text using the keyboard
+    keys_to_type = [
+        'H', 'E', 'L', 'L', 'O', ' ', 'W', 'O', 'R', 'L', 'D'
+    ]
+    for key in keys_to_type:
+        key_xpath = f'//*[@resource-id="com.google.android.inputmethod.latin:id/key_pos_2_7"]/android.widget.TextView[1]'
+        receiver_device.xpath(key_xpath).click()
+        time.sleep(1)
+    
+    # Select contact and message
+    receiver_device(text="Shubham").click()
+    time.sleep(2)
+    receiver_device(text="RCS message").click()
+    time.sleep(2)
+    
+    # Check if the compose message text field contains the text "Hello World"
+    compose_message_text = receiver_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").get_text()
+    if "HELLO WORLD" in compose_message_text:
+        result = "Keypad used with sounds"
+    else:
+        result = "Keypad not used"
+    
+    # Create a DataFrame to store the test result
+    test_case = "keypad_usage_test"
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    test_results_df = pd.DataFrame({
+        'Serial No': [receiver_device_serial],
+        'Test Case No': [test_case],
+        'Result': [result],
+        'Timestamp': [timestamp]
+    })
+    
+    # Save the DataFrame to an Excel file
+    excel_filename = 'test_results.xlsx'
+    try:
+        existing_data = pd.read_excel(excel_filename)
+        updated_data = pd.concat([existing_data, test_results_df], ignore_index=True)
+        updated_data.to_excel(excel_filename, index=False)
+        print("Test result appended to", excel_filename)
+    except FileNotFoundError:
+        test_results_df.to_excel(excel_filename, index=False)
+        print("Test result saved to", excel_filename)
+
+    # Print the test result
+    print(result)
+
+if __name__ == "__main__":
+    main()
