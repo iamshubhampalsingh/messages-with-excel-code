@@ -1,0 +1,71 @@
+import uiautomator2 as ui2
+import subprocess
+import time
+import openpyxl
+from datetime import datetime
+
+# Connect to the devices
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Create a Device object for the sender device
+sender_device_serial = "cf611ff9"
+sender_device = ui2.Device(sender_device_serial)
+
+# Perform interactions on the receiver device
+time.sleep(2)
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(text="Start chat").click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').click()
+time.sleep(2)
+receiver_device.xpath('//android.widget.ScrollView').set_text("Shubham")
+time.sleep(2)
+receiver_device(text="Shubham").click()
+
+# Retrieve battery percentage of the receiver device
+adb_command = f"adb -s {receiver_device_serial} shell dumpsys battery"
+result = subprocess.check_output(adb_command, shell=True).decode("utf-8")
+
+# Extract battery percentage from the result
+battery_percentage = None
+lines = result.strip().split("\n")
+for line in lines:
+    if "level:" in line:
+        battery_percentage = int(line.split("level:")[1].strip())
+
+# Print the battery percentage and status
+battery_status = None
+if battery_percentage is not None:
+    print(f"Receiver Device Battery Percentage: {battery_percentage}%")
+    if battery_percentage >= 100:
+        battery_status = "Full"
+        print("Battery Status: Full")
+    elif battery_percentage < 15:
+        battery_status = "Low"
+        print("Battery Status: Low")
+else:
+    print("Failed to retrieve receiver device battery percentage.")
+
+# Create or load an Excel workbook
+excel_file = "battery_status.xlsx"
+workbook = openpyxl.Workbook()
+
+# Select the active worksheet
+worksheet = workbook.active
+
+# Add headers to the worksheet
+worksheet.append(["Timestamp", "Battery Percentage", "Battery Status"])
+
+# Get the current timestamp
+current_time = datetime.now()
+
+# Add data to the worksheet
+worksheet.append([current_time, battery_percentage, battery_status])
+
+# Save the workbook
+workbook.save(excel_file)
+
+# Print a message indicating that the data has been saved to the Excel file
+print(f"Data has been saved to '{excel_file}'")
