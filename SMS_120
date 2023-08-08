@@ -1,0 +1,105 @@
+import uiautomator2 as ui2
+import time
+import pandas as pd
+from datetime import datetime
+
+# Initialize an empty list to store test results
+test_results = []
+
+# Function to record a test result
+def record_result(description, status):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    test_results.append({"Timestamp": timestamp, "Description": description, "Status": status})
+
+# Connect to the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+import uiautomator2 as ui2
+import time
+
+# Connect to the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+receiver_device = ui2.Device(receiver_device_serial)
+
+# Define the initial swipe coordinates
+start_x = 500
+start_y = 500
+end_y = 1500
+swipe_duration = 0.5
+
+# Perform multiple swipes to scroll the screen downwards
+num_swipes = 5
+for _ in range(num_swipes):
+    receiver_device.swipe(start_x, start_y, start_x, end_y, duration=swipe_duration)
+    time.sleep(1)
+
+# Click on the Bluetooth tile in the system UI
+receiver_device(resourceId="com.android.systemui:id/tile_label", text="Bluetooth").click()
+time.sleep(2)
+
+# Long-click on the Bluetooth tile
+receiver_device(resourceId="com.android.systemui:id/tile_label", text="Bluetooth").long_click()
+time.sleep(2)
+
+# Click on the "Pair new device" option
+receiver_device(resourceId="android:id/title", text="Pair new device").click()
+
+# Check for the presence of a specific device ("OnePlus 9 Pro 5G") and initiate the pairing process
+num_swipes = 100
+for _ in range(num_swipes):
+    if receiver_device(resourceId="android:id/title", text="OnePlus 9 Pro 5G").exists():
+        receiver_device(resourceId="android:id/title", text="OnePlus 9 Pro 5G").click()
+        time.sleep(1)
+        receiver_device(text="Pair").click()
+        print("Bluetooth connected")
+        break
+    else:
+        print("Bluetooth not connected")
+    time.sleep(1)
+
+# Create a Device object for the receiver device
+d = ui2.Device(receiver_device_serial)
+
+receiver_device(text="Phone").click()
+time.sleep(2)
+
+num_runs = 10
+for run in range(num_runs):
+    receiver_device(resourceId='com.google.android.dialer:id/dialpad_fab').click()
+    receiver_device(text='8').click()
+    receiver_device(text='5').click()
+    receiver_device(text='2').click()
+    receiver_device(text='7').click()
+    receiver_device(text='7').click()
+    receiver_device(text='4').click()
+    receiver_device(text='6').click()
+    receiver_device(text='8').click()
+    receiver_device(text='9').click()
+    receiver_device(text='7').click()
+    receiver_device(resourceId="com.android.dialer:id/dialpad_floating_action_button").click()
+    time.sleep(60)
+    receiver_device(resourceId="com.android.dialer:id/incall_end_call").click()
+
+time.sleep(2)
+receiver_device(resourceId="com.android.systemui:id/recent_apps").click()
+# Record the test result
+record_result("Bluetooth pairing", "Pass")
+
+
+# Create a Device object for the receiver device
+d = ui2.Device(receiver_device_serial)
+
+
+# Record the test result
+record_result("Phone dialing automation", "Pass")
+
+
+
+# Create a DataFrame from the test results
+df = pd.DataFrame(test_results, columns=["Timestamp", "Description", "Status"])
+
+# Save the DataFrame to an Excel file
+excel_file = "test_results.xlsx"
+df.to_excel(excel_file, index=False)
+print(f"Test results saved to {excel_file}")
