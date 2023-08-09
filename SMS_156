@@ -1,0 +1,63 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from openpyxl import Workbook
+from datetime import datetime
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ADB commands to turn on the receiver and sender devices' screens
+receiver_turn_on_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '224']
+sender_turn_on_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '224']
+
+# ADB commands to turn off the receiver and sender devices' screens
+receiver_turn_off_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '26']
+sender_turn_off_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '26']
+
+# Create a new Excel workbook
+workbook = Workbook()
+sheet = workbook.active
+sheet.append(['Action', 'Result', 'Timestamp'])
+
+# Function to log results in Excel
+def log_result(action, result):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    sheet.append([action, result, timestamp])
+
+# Compose and send messages from the sender device
+try:
+    receiver_device(text="Messages").click()
+    time.sleep(2)
+    receiver_device(resourceId="com.google.android.apps.messaging:id/og_apd_internal_image_view").click()
+    time.sleep(2)
+    receiver_device(resourceId="com.google.android.apps.messaging:id/og_text_card_title", text="Messages settings").click()
+    time.sleep(2)
+    receiver_device(resourceId="android:id/title", text="Notifications").click()
+    time.sleep(2)
+    receiver_device(resourceId="android:id/title", text="Incoming messages").click()
+    time.sleep(2)
+    receiver_device(resourceId="android:id/title", text="Sound").click()
+    time.sleep(2)
+    receiver_device(scrollable=True).scroll.to(text="THIRDPARTYSONG")
+    time.sleep(2)
+    receiver_device(text="THIRDPARTYSONG").click()
+    time.sleep(2)
+    receiver_device(resourceId="android:id/button1").click()
+    log_result('Change Ringtone', 'Pass')
+    print("Ringtone changed to Thirdpartysong")
+except Exception as e:
+    log_result('Change Ringtone', 'Fail: ' + str(e))
+
+# ... (rest of your script)
+
+# Save the Excel file
+result_file = 'test_results.xlsx'
+workbook.save(result_file)
+print(f"Results saved in {result_file}")
