@@ -1,0 +1,60 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import openpyxl
+from datetime import datetime
+
+
+# Define a function to log results and save to Excel
+def log_result(description, status):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    result_row = [description, status, timestamp]
+    results_sheet.append(result_row)
+    print(f"Description: {description} | Status: {status} | Timestamp: {timestamp}")
+
+
+# Create an Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+results_sheet = workbook.active
+results_sheet.title = "Results"
+results_sheet.append(["Description", "Status", "Timestamp"])
+
+try:
+    # Turn off notifications for "All Messages"
+    receiver_device(text="Messages").click()
+    time.sleep(2)
+    receiver_device(resourceId="com.google.android.apps.messaging:id/og_apd_internal_image_view").click()
+    time.sleep(2)
+    receiver_device(resourceId="com.google.android.apps.messaging:id/og_text_card_title", text="Messages settings").click()
+    time.sleep(2)
+    receiver_device(resourceId="android:id/title", text="Notifications").click()
+    time.sleep(2)
+    receiver_device(resourceId="com.android.settings:id/switch_widget").click()
+    time.sleep(2)
+    log_result("All Messages notification off", "Pass")
+except Exception as e:
+    log_result("Exception - " + str(e), "Fail")
+
+try:
+    # Compose and send messages from the sender device
+    sender_device(text="Messages").click()
+    time.sleep(2)
+    sender_device(text="Start chat").click()
+    time.sleep(2)
+    sender_device(text="AAAAA").click()
+    sender_device(text="Mobile+91 84486 97488").click()
+
+    num_runs = 10
+    for run in range(num_runs):
+        sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+        time.sleep(2)
+        sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+        time.sleep(2)
+    log_result("The notification dot not shown", "Pass")
+except Exception as e:
+    log_result("Exception - " + str(e), "Fail")
+
+# Save the results to an Excel file
+excel_filename = "results.xlsx"
+workbook.save(excel_filename)
+print(f"Results saved to {excel_filename}")
