@@ -1,0 +1,101 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import pandas as pd
+from datetime import datetime
+
+# Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ADB commands to turn on the receiver and sender devices' screens
+receiver_turn_on_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '224']
+sender_turn_on_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '224']
+
+# ADB commands to turn off the receiver and sender devices' screens
+receiver_turn_off_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '26']
+sender_turn_off_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '26']
+
+# Create an empty DataFrame to store results
+results_df = pd.DataFrame(columns=['Serial No', 'Description', 'Pass/Fail', 'Timestamp'])
+
+# Function to add a result to the DataFrame
+def add_result(serial_no, description, pass_fail):
+    global results_df
+    results_df = results_df.append({
+        'Serial No': serial_no,
+        'Description': description,
+        'Pass/Fail': pass_fail,
+        'Timestamp': datetime.now()
+    }, ignore_index=True)
+
+# Your existing code...
+try:
+    # Device serial number of the receiver device
+receiver_device_serial = "192.168.168.16:5555"
+
+# Create a Device object for the sender device
+sender_device = ui2.Device('cf611ff9')
+
+# Create a Device object for the receiver device
+receiver_device = ui2.Device(receiver_device_serial)
+
+# ADB commands to turn on the receiver and sender devices' screens
+receiver_turn_on_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '224']
+sender_turn_on_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '224']
+
+# ADB commands to turn off the receiver and sender devices' screens
+receiver_turn_off_command = ['adb', '-s', receiver_device_serial, 'shell', 'input', 'keyevent', '26']
+sender_turn_off_command = ['adb', '-s', 'cf611ff9', 'shell', 'input', 'keyevent', '26']
+
+# Compose and send messages from the sender device
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/og_apd_internal_image_view").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/og_text_card_title", text="Messages settings").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Notifications").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Incoming messages").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Pop on screen").click()
+time.sleep(2)
+receiver_device.press("home")
+time.sleep(2)
+# Compose and send messages from the sender device
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+
+num_runs = 10
+for run in range(num_runs):
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+    
+print("Vibration with tone selected observed")
+
+    add_result(1, 'Change Notification Settings', 'Pass')
+    
+    # ... Your existing code ...
+    
+    add_result(2, 'Sending Messages', 'Pass')
+    
+except Exception as e:
+    print("An error occurred:", str(e))
+    add_result(1, 'Change Notification Settings', 'Fail')
+
+# Export the DataFrame to an Excel file
+excel_filename = 'test_results.xlsx'
+results_df.to_excel(excel_filename, index=False)
+print(f'Results exported to {excel_filename}')
