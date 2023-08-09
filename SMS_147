@@ -1,0 +1,60 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import openpyxl
+from datetime import datetime
+
+# Define the initial swipe coordinates
+start_x = 500
+start_y = 500
+end_y = 1500
+swipe_duration = 0.5
+
+# Perform multiple swipes to scroll the screen downwards
+num_swipes = 5  # Adjust the number of swipes as needed
+for _ in range(num_swipes):
+ receiver_device.swipe(start_x, start_y, start_x, end_y, duration=swipe_duration)
+ time.sleep(1)  # Adjust the delay between swipes if necessary
+    
+receiver_device(resourceId="com.android.systemui:id/settings_button_container").click()
+time.sleep(2)
+receiver_device(scrollable=True).scroll.to(text="About phone")
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="About phone").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Version").click()
+time.sleep(2)
+if receiver_device(resourceId="android:id/summary", text="LAVA_LXX504_SW_V07_HW_V1.0_20230617").exists():
+    print("Build no is correct")
+    
+else:
+    print("Build no is not correct")
+
+# Define a function to log results and save to Excel
+def log_result(description, status):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    result_row = [description, status, timestamp]
+    results_sheet.append(result_row)
+    print(f"Description: {description} | Status: {status} | Timestamp: {timestamp}")
+
+
+# Create an Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+results_sheet = workbook.active
+results_sheet.title = "Results"
+results_sheet.append(["Description", "Status", "Timestamp"])
+
+
+
+    # Checking the build number
+    if receiver_device(resourceId="android:id/summary", text="LAVA_LXX504_SW_V07_HW_V1.0_20230617").exists():
+        log_result("Build number is correct", "Pass")
+    else:
+        log_result("Build number is not correct", "Fail")
+except Exception as e:
+    log_result("Exception - " + str(e), "Fail")
+
+# Save the results to an Excel file
+excel_filename = "results.xlsx"
+workbook.save(excel_filename)
+print(f"Results saved to {excel_filename}")
