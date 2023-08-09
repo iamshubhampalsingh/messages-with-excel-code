@@ -1,0 +1,66 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+import openpyxl
+from datetime import datetime
+
+# Compose and send messages from the sender device
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+
+num_runs = 10
+for run in range(num_runs):
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+
+# Turn on the receiver device's screen
+subprocess.run(receiver_turn_on_command, capture_output=True)
+
+if receiver_device(resourceId="android:id/action0", text="REPLY").exists():
+    print("The pop message is present")
+else:
+    print("The pop up message is not present")
+
+# Define a function to log results and save to Excel
+def log_result(description, status):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    result_row = [description, status, timestamp]
+    results_sheet.append(result_row)
+    print(f"Description: {description} | Status: {status} | Timestamp: {timestamp}")
+
+
+# Create an Excel workbook and add a sheet
+workbook = openpyxl.Workbook()
+results_sheet = workbook.active
+results_sheet.title = "Results"
+results_sheet.append(["Description", "Status", "Timestamp"])
+
+
+
+try:
+    # Execute the ADB command to turn off the receiver device's screen
+    subprocess.run(receiver_turn_off_command, capture_output=True)
+    
+    
+    # Check for the pop-up message
+    if receiver_device(resourceId="android:id/action0", text="REPLY").exists():
+        log_result("The pop-up message is present", "Pass")
+    else:
+        log_result("The pop-up message is not present", "Fail")
+        
+    # Turn on the receiver device's screen
+    subprocess.run(receiver_turn_on_command, capture_output=True)
+except Exception as e:
+    log_result("Exception - " + str(e), "Fail")
+
+
+# Save the results to an Excel file
+excel_filename = "results.xlsx"
+workbook.save(excel_filename)
+print(f"Results saved to {excel_filename}")
