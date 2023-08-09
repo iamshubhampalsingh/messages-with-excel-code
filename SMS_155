@@ -1,0 +1,70 @@
+import uiautomator2 as ui2
+import time
+import subprocess
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from datetime import datetime
+
+# Create a new Excel workbook
+workbook = Workbook()
+sheet = workbook.active
+sheet.append(['Serial No', 'Description', 'Result', 'Timestamp'])
+
+# Function to log results in Excel
+def log_result(serial_no, description, result):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    sheet.append([serial_no, description, result, timestamp])
+
+# Rest of your script
+receiver_device_serial = "192.168.168.16:5555"
+# Compose and send messages from the sender device
+receiver_device(text="Messages").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/og_apd_internal_image_view").click()
+time.sleep(2)
+receiver_device(resourceId="com.google.android.apps.messaging:id/og_text_card_title", text="Messages settings").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Notifications").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Incoming messages").click()
+time.sleep(2)
+receiver_device(resourceId="android:id/title", text="Sound").click()
+time.sleep(2)
+receiver_device.xpath('//*[@resource-id="android:id/select_dialog_listview"]/android.widget.RelativeLayout[1]').click()
+time.sleep(2)
+receiver_device(resourceId="android:id/button1").click()
+print("Ringtone changed to adara")
+time.sleep(2)
+receiver_device.press("home")
+# Compose and send messages from the sender device
+sender_device(text="Messages").click()
+time.sleep(2)
+sender_device(text="Start chat").click()
+time.sleep(2)
+sender_device(text="AAAAA").click()
+sender_device(text="Mobile+91 84486 97488").click()
+
+num_runs = 10
+for run in range(num_runs):
+    sender_device(resourceId="com.google.android.apps.messaging:id/compose_message_text").set_text("hello")
+    time.sleep(2)
+    sender_device(resourceId="com.google.android.apps.messaging:id/send_message_button_container").click()
+    time.sleep(2)
+    
+print("The notification dot not shown")
+
+# Example of logging pass/fail results
+try:
+    # Your actions here
+    
+    # Log a pass result
+    log_result('1', 'Changing Ringtone', 'Pass')
+    
+except Exception as e:
+    # Log a fail result with error message
+    log_result('1', 'Changing Ringtone', 'Fail: ' + str(e))
+
+# Save the Excel file
+result_file = 'test_results.xlsx'
+workbook.save(result_file)
+print(f"Results saved in {result_file}")
